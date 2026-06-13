@@ -9,7 +9,7 @@ public class Main {
         while (true) {
             String input = sc.nextLine();
             System.out.print(input + ": command not found");
-            System.out.print("$ ");
+
         }
     }
 }
