@@ -10,9 +10,8 @@ public class Main {
             String input = sc.nextLine();
             if (input.equals("exit")) {
                 break;
-            } else {
-                System.out.println(input + ": command not found");
             }
+            System.out.println(input + ": command not found");
 
         }
     }
