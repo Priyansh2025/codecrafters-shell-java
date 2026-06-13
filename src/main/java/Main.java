@@ -8,8 +8,7 @@ public class Main {
         while (true) {
             System.out.print("$ ");
             String input = sc.nextLine();
-            System.out.print(input + ": command not found");
-
+            System.out.println(input + ": command not found");
         }
     }
 }
