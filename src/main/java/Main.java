@@ -4,6 +4,9 @@ import java.util.Objects;
 import java.util.Scanner;
 
 public class Main {
+
+    private static File currentDirectory = new File(System.getProperty("user.dir"));
+
     public static void main(String[] args) throws Exception {
         boolean exit = false;
         Scanner sc = new Scanner(System.in);
@@ -17,26 +20,38 @@ public class Main {
             String[] rest = Arrays.copyOfRange(words, 1, words.length);
             String result = String.join(" ", rest);
 
-            if (Objects.equals(command, "exit"))
+            if (Objects.equals(command, "exit")) {
                 exit = true;
-            else if (Objects.equals(command, "echo"))
+            } else if (Objects.equals(command, "echo")) {
                 System.out.println(result);
-            else if (Objects.equals(command, "type"))
+            } else if (Objects.equals(command, "type")) {
                 System.out.println(type(result));
-            else if (Objects.equals(command, "pwd"))
-                System.out.println(System.getProperty("user.dir"));
-            else if (getExecutable(command) != null) {
-                Process process = Runtime.getRuntime().exec(input.split(" "));
+            } else if (Objects.equals(command, "pwd")) {
+                System.out.println(currentDirectory.getCanonicalPath());
+            } else if (Objects.equals(command, "cd")) {
+                File target = new File(result);
+
+                if (target.exists() && target.isDirectory()) {
+                    currentDirectory = target.getCanonicalFile();
+                } else {
+                    System.out.println("cd: " + result + ": No such file or directory");
+                }
+            } else if (getExecutable(command) != null) {
+                ProcessBuilder pb = new ProcessBuilder(input.split(" "));
+                pb.directory(currentDirectory);
+
+                Process process = pb.start();
                 process.getInputStream().transferTo(System.out);
-            } else
+            } else {
                 System.out.println(input + ": command not found");
+            }
         }
 
         sc.close();
     }
 
     public static String type(String command) {
-        String[] commands = { "exit", "echo", "type", "pwd" };
+        String[] commands = { "exit", "echo", "type", "pwd", "cd" };
 
         String pathCommands = System.getenv("PATH");
         String[] pathCommand = pathCommands.split(":");
