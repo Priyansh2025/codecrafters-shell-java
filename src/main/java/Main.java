@@ -80,8 +80,20 @@ public class Main {
 
         boolean inSingleQuotes = false;
         boolean inDoubleQuotes = false;
+        boolean escaping = false;
 
         for (char c : input.toCharArray()) {
+
+            if (escaping) {
+                current.append(c);
+                escaping = false;
+                continue;
+            }
+
+            if (!inSingleQuotes && c == '\\') {
+                escaping = true;
+                continue;
+            }
 
             if (c == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
