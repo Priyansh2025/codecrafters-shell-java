@@ -135,12 +135,12 @@ public class Main {
         String pathCommands = System.getenv("PATH");
         String[] pathCommand = pathCommands.split(":");
 
-        //for (String path : pathCommand) {
-        //    File file = new File(path, command);
-        //    if (file.exists() && file.canExecute()) {
-        //        return file.getAbsolutePath();
-        //    }
-        //}
+        for (String path : pathCommand) {
+            File file = new File(path, command);
+            if (file.exists() && file.canExecute()) {
+                return file.getAbsolutePath();
+            }
+        }
 
         return null;
     }
