@@ -32,7 +32,9 @@ public class Main {
 
                 File target;
 
-                if (new File(result).isAbsolute()) {
+                if (result.equals("~")) {
+                    target = new File(System.getenv("HOME"));
+                } else if (new File(result).isAbsolute()) {
                     target = new File(result);
                 } else {
                     target = new File(currentDirectory, result);
@@ -45,11 +47,13 @@ public class Main {
                 }
 
             } else if (getExecutable(command) != null) {
+
                 ProcessBuilder pb = new ProcessBuilder(input.split(" "));
                 pb.directory(currentDirectory);
 
                 Process process = pb.start();
                 process.getInputStream().transferTo(System.out);
+
             } else {
                 System.out.println(input + ": command not found");
             }
@@ -61,13 +65,13 @@ public class Main {
     public static String type(String command) {
         String[] commands = { "exit", "echo", "type", "pwd", "cd" };
 
-        String pathCommands = System.getenv("PATH");
-        String[] pathCommand = pathCommands.split(":");
-
         for (String text : commands) {
             if (Objects.equals(text, command))
                 return command + " is a shell builtin";
         }
+
+        String pathCommands = System.getenv("PATH");
+        String[] pathCommand = pathCommands.split(":");
 
         for (String path : pathCommand) {
             File file = new File(path, command);
