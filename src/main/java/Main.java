@@ -91,12 +91,12 @@ public class Main {
             }
         }
 
-        if (current.length() > 0) {
-            tokens.add(current.toString());
-        }
+    //    if (current.length() > 0) {
+    //        tokens.add(current.toString());
+    //    }
 
-        return tokens;
-    }
+    //    return tokens;
+    //}
 
     public static String type(String command) {
         String[] commands = { "exit", "echo", "type", "pwd", "cd" };
@@ -109,12 +109,12 @@ public class Main {
         String pathCommands = System.getenv("PATH");
         String[] pathCommand = pathCommands.split(":");
 
-        //for (String path : pathCommand) {
-        //    File file = new File(path, command);
-        //    if (file.exists() && file.canExecute()) {
-        //        return command + " is " + file.getAbsolutePath();
-        //    }
-        //}
+        for (String path : pathCommand) {
+            File file = new File(path, command);
+            if (file.exists() && file.canExecute()) {
+                return command + " is " + file.getAbsolutePath();
+            }
+        }
 
         return command + ": not found";
     }
