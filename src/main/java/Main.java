@@ -64,6 +64,7 @@ public class Main {
 
                 Process process = pb.start();
                 process.getInputStream().transferTo(System.out);
+                process.getErrorStream().transferTo(System.err);
 
             } else {
                 System.out.println(command + ": command not found");
@@ -76,12 +77,23 @@ public class Main {
     private static List<String> parseInput(String input) {
         List<String> tokens = new ArrayList<>();
         StringBuilder current = new StringBuilder();
+
         boolean inSingleQuotes = false;
+        boolean inDoubleQuotes = false;
 
         for (char c : input.toCharArray()) {
-            if (c == '\'') {
+
+            if (c == '\'' && !inDoubleQuotes) {
                 inSingleQuotes = !inSingleQuotes;
-            } else if (c == ' ' && !inSingleQuotes) {
+                continue;
+            }
+
+            if (c == '"' && !inSingleQuotes) {
+                inDoubleQuotes = !inDoubleQuotes;
+                continue;
+            }
+
+            if (c == ' ' && !inSingleQuotes && !inDoubleQuotes) {
                 if (current.length() > 0) {
                     tokens.add(current.toString());
                     current.setLength(0);
@@ -123,12 +135,12 @@ public class Main {
         String pathCommands = System.getenv("PATH");
         String[] pathCommand = pathCommands.split(":");
 
-        for (String path : pathCommand) {
-            File file = new File(path, command);
-            if (file.exists() && file.canExecute()) {
-                return file.getAbsolutePath();
-            }
-        }
+        //for (String path : pathCommand) {
+        //    File file = new File(path, command);
+        //    if (file.exists() && file.canExecute()) {
+        //        return file.getAbsolutePath();
+        //    }
+        //}
 
         return null;
     }
