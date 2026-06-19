@@ -91,12 +91,12 @@ public class Main {
             }
         }
 
-    //    if (current.length() > 0) {
-    //        tokens.add(current.toString());
-    //    }
+        if (current.length() > 0) {
+            tokens.add(current.toString());
+        }
 
-    //    return tokens;
-    //}
+        return tokens;
+    }
 
     public static String type(String command) {
         String[] commands = { "exit", "echo", "type", "pwd", "cd" };
