@@ -1,5 +1,6 @@
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -15,19 +16,29 @@ public class Main {
             System.out.print("$ ");
             String input = sc.nextLine();
 
-            String[] words = input.split(" ");
-            String command = words[0];
-            String[] rest = Arrays.copyOfRange(words, 1, words.length);
-            String result = String.join(" ", rest);
+            List<String> words = parseInput(input);
+
+            if (words.isEmpty()) {
+                continue;
+            }
+
+            String command = words.get(0);
+            String result = words.size() > 1
+                    ? String.join(" ", words.subList(1, words.size()))
+                    : "";
 
             if (Objects.equals(command, "exit")) {
                 exit = true;
+
             } else if (Objects.equals(command, "echo")) {
                 System.out.println(result);
+
             } else if (Objects.equals(command, "type")) {
                 System.out.println(type(result));
+
             } else if (Objects.equals(command, "pwd")) {
                 System.out.println(currentDirectory.getCanonicalPath());
+
             } else if (Objects.equals(command, "cd")) {
 
                 File target;
@@ -48,18 +59,43 @@ public class Main {
 
             } else if (getExecutable(command) != null) {
 
-                ProcessBuilder pb = new ProcessBuilder(input.split(" "));
+                ProcessBuilder pb = new ProcessBuilder(words);
                 pb.directory(currentDirectory);
 
                 Process process = pb.start();
                 process.getInputStream().transferTo(System.out);
 
             } else {
-                System.out.println(input + ": command not found");
+                System.out.println(command + ": command not found");
             }
         }
 
         sc.close();
+    }
+
+    private static List<String> parseInput(String input) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inSingleQuotes = false;
+
+        for (char c : input.toCharArray()) {
+            if (c == '\'') {
+                inSingleQuotes = !inSingleQuotes;
+            } else if (c == ' ' && !inSingleQuotes) {
+                if (current.length() > 0) {
+                    tokens.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+
+        if (current.length() > 0) {
+            tokens.add(current.toString());
+        }
+
+        return tokens;
     }
 
     public static String type(String command) {
@@ -73,12 +109,12 @@ public class Main {
         String pathCommands = System.getenv("PATH");
         String[] pathCommand = pathCommands.split(":");
 
-        for (String path : pathCommand) {
-            File file = new File(path, command);
-            if (file.exists() && file.canExecute()) {
-                return command + " is " + file.getAbsolutePath();
-            }
-        }
+        //for (String path : pathCommand) {
+        //    File file = new File(path, command);
+        //    if (file.exists() && file.canExecute()) {
+        //        return command + " is " + file.getAbsolutePath();
+        //    }
+        //}
 
         return command + ": not found";
     }
