@@ -29,13 +29,21 @@ public class Main {
             } else if (Objects.equals(command, "pwd")) {
                 System.out.println(currentDirectory.getCanonicalPath());
             } else if (Objects.equals(command, "cd")) {
-                File target = new File(result);
+
+                File target;
+
+                if (new File(result).isAbsolute()) {
+                    target = new File(result);
+                } else {
+                    target = new File(currentDirectory, result);
+                }
 
                 if (target.exists() && target.isDirectory()) {
                     currentDirectory = target.getCanonicalFile();
                 } else {
                     System.out.println("cd: " + result + ": No such file or directory");
                 }
+
             } else if (getExecutable(command) != null) {
                 ProcessBuilder pb = new ProcessBuilder(input.split(" "));
                 pb.directory(currentDirectory);
