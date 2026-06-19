@@ -82,7 +82,34 @@ public class Main {
         boolean inDoubleQuotes = false;
         boolean escaping = false;
 
-        for (char c : input.toCharArray()) {
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+
+            if (inDoubleQuotes) {
+                if (escaping) {
+                    if (c == '"' || c == '\\' || c == '$') {
+                        current.append(c);
+                    } else {
+                        current.append('\\');
+                        current.append(c);
+                    }
+                    escaping = false;
+                    continue;
+                }
+
+                if (c == '\\') {
+                    escaping = true;
+                    continue;
+                }
+
+                if (c == '"') {
+                    inDoubleQuotes = false;
+                    continue;
+                }
+
+                current.append(c);
+                continue;
+            }
 
             if (escaping) {
                 current.append(c);
@@ -101,11 +128,11 @@ public class Main {
             }
 
             if (c == '"' && !inSingleQuotes) {
-                inDoubleQuotes = !inDoubleQuotes;
+                inDoubleQuotes = true;
                 continue;
             }
 
-            if (c == ' ' && !inSingleQuotes && !inDoubleQuotes) {
+            if (c == ' ' && !inSingleQuotes) {
                 if (current.length() > 0) {
                     tokens.add(current.toString());
                     current.setLength(0);
@@ -113,6 +140,10 @@ public class Main {
             } else {
                 current.append(c);
             }
+        }
+
+        if (escaping) {
+            current.append('\\');
         }
 
         if (current.length() > 0) {
