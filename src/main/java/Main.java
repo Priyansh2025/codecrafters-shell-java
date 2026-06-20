@@ -131,16 +131,27 @@ public class Main {
 
                     if (!job.process.isAlive()) {
                         iterator.remove();
-                        continue;
+                    }
+                }
+
+                for (int i = 0; i < jobs.size(); i++) {
+                    Job job = jobs.get(i);
+
+                    String marker = " ";
+
+                    if (i == jobs.size() - 1) {
+                        marker = "+";
+                    } else if (i == jobs.size() - 2) {
+                        marker = "-";
                     }
 
                     System.out.printf(
-                            "[%d]+  %-24s%s%n",
+                            "[%d]%s  %-24s%s%n",
                             job.jobNumber,
+                            marker,
                             "Running",
                             job.command);
                 }
-
             } else if (getExecutable(command) != null) {
 
                 ProcessBuilder pb = new ProcessBuilder(commandWords);
