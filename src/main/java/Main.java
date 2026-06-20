@@ -12,77 +12,45 @@ public class Main {
         Path currentDirectory = Path.of("").toAbsolutePath().normalize();
         int nextJobNumber = 1;
         List<BackgroundJob> backgroundJobs = new ArrayList<>();
-
         while (true) {
             reapBackgroundJobs(backgroundJobs, false);
             System.out.print("$ ");
             System.out.flush();
-
             if (!scanner.hasNextLine()) {
                 break;
             }
-
             String commandLine = scanner.nextLine();
             List<ParsedArgument> parsedArguments = parseArguments(commandLine);
-
             if (parsedArguments.isEmpty()) {
                 continue;
             }
-
             ParsedArgument lastArgument = parsedArguments.get(parsedArguments.size() - 1);
             boolean runInBackground = parsedArguments.size() > 1
                     && lastArgument.value.equals("&")
                     && !lastArgument.quoted;
-
             if (runInBackground) {
                 parsedArguments.remove(parsedArguments.size() - 1);
             }
-
             String command = parsedArguments.get(0).value;
-            List<String> arguments = parsedArguments.stream()
-                    .skip(1)
-                    .map(argument -> argument.value)
-                    .toList();
-
+            List<String> arguments = parsedArguments.stream().skip(1).map(argument -> argument.value).toList();
             if (command.equals("exit")) {
                 break;
             }
-
             if (command.equals("echo")) {
                 System.out.println(String.join(" ", arguments));
             } else if (command.equals("jobs")) {
-
-                reapBackgroundJobs(backgroundJobs, false);
-
-                for (int i = 0; i < backgroundJobs.size(); i++) {
-                    BackgroundJob job = backgroundJobs.get(i);
-
-                    char marker = i == backgroundJobs.size() - 1
-                            ? '+'
-                            : i == backgroundJobs.size() - 2 ? '-' : ' ';
-
-                    System.out.printf(
-                            "[%d]%c  %-24s%s &%n",
-                            job.number,
-                            marker,
-                            "Running",
-                            job.commandLine.replaceFirst("\\s*&\\s*$", ""));
-                }
+                reapBackgroundJobs(backgroundJobs, true);
             } else if (command.equals("pwd")) {
                 System.out.println(currentDirectory);
             } else if (command.equals("cd") && !arguments.isEmpty()) {
                 String directory = arguments.get(0);
-                String resolvedDirectory = directory.equals("~")
-                        && !parsedArguments.get(1).quoted
-                                ? System.getenv("HOME")
-                                : directory;
-                Path requestedDirectory = resolvedDirectory == null
-                        ? Path.of(directory)
-                        : Path.of(resolvedDirectory);
+                String resolvedDirectory = directory.equals("~") && !parsedArguments.get(1).quoted
+                        ? System.getenv("HOME")
+                        : directory;
+                Path requestedDirectory = resolvedDirectory == null ? Path.of(directory) : Path.of(resolvedDirectory);
                 Path targetDirectory = requestedDirectory.isAbsolute()
                         ? requestedDirectory.normalize()
                         : currentDirectory.resolve(requestedDirectory).normalize();
-
                 if (Files.isDirectory(targetDirectory)) {
                     currentDirectory = targetDirectory.toAbsolutePath().normalize();
                 } else {
@@ -90,7 +58,6 @@ public class Main {
                 }
             } else if (command.equals("type") && !arguments.isEmpty()) {
                 String commandName = arguments.get(0);
-
                 if (commandName.equals("echo")
                         || commandName.equals("exit")
                         || commandName.equals("type")
@@ -100,7 +67,6 @@ public class Main {
                     System.out.println(commandName + " is a shell builtin");
                 } else {
                     Path executable = findExecutable(commandName);
-
                     if (executable != null) {
                         System.out.println(commandName + " is " + executable);
                     } else {
@@ -109,7 +75,6 @@ public class Main {
                 }
             } else {
                 Path executable = findExecutable(command);
-
                 if (executable == null) {
                     System.out.println(command + ": command not found");
                 } else {
@@ -120,11 +85,10 @@ public class Main {
                             .directory(currentDirectory.toFile())
                             .inheritIO()
                             .start();
-
                     if (runInBackground) {
                         int jobNumber = nextJobNumber++;
-                        backgroundJobs.add(new BackgroundJob(
-                                jobNumber, process, commandLine.trim()));
+                        backgroundJobs.add(
+                                new BackgroundJob(jobNumber, process, commandLine.trim()));
                         System.out.println("[" + jobNumber + "] " + process.pid());
                     } else {
                         process.waitFor();
@@ -138,37 +102,23 @@ public class Main {
             List<BackgroundJob> backgroundJobs, boolean includeRunning)
             throws InterruptedException {
         List<BackgroundJob> completedJobs = new ArrayList<>();
-
         for (int i = 0; i < backgroundJobs.size(); i++) {
             BackgroundJob job = backgroundJobs.get(i);
-            boolean running;
-
-            try {
-                job.process.exitValue();
-                running = false;
-            } catch (IllegalThreadStateException e) {
-                running = true;
-            }
-
+            boolean running = job.process.isAlive();
             if (running && !includeRunning) {
                 continue;
             }
-
             char marker = i == backgroundJobs.size() - 1
                     ? '+'
                     : i == backgroundJobs.size() - 2 ? '-' : ' ';
             String status = running ? "Running" : "Done";
-            String displayedCommand = running
-                    ? job.commandLine
-                    : job.commandLine.replaceFirst("\\s*&\\s*$", "");
-            System.out.printf("[%d]%c  %-24s%s%n",
-                    job.number, marker, status, displayedCommand);
-
+            String displayedCommand = running ? job.commandLine : job.commandLine.replaceFirst("\\s*&\\s*$", "");
+            System.out.printf("[%d]%c  %-24s%s%n", job.number, marker, status, displayedCommand);
             if (!running) {
+                job.process.waitFor();
                 completedJobs.add(job);
             }
         }
-
         backgroundJobs.removeAll(completedJobs);
     }
 
@@ -179,10 +129,8 @@ public class Main {
         boolean inDoubleQuotes = false;
         boolean tokenStarted = false;
         boolean tokenQuoted = false;
-
         for (int i = 0; i < input.length(); i++) {
             char character = input.charAt(i);
-
             if (character == '\\' && !inSingleQuotes && !inDoubleQuotes) {
                 if (i + 1 < input.length()) {
                     current.append(input.charAt(++i));
@@ -208,9 +156,7 @@ public class Main {
                 inDoubleQuotes = !inDoubleQuotes;
                 tokenStarted = true;
                 tokenQuoted = true;
-            } else if (Character.isWhitespace(character)
-                    && !inSingleQuotes
-                    && !inDoubleQuotes) {
+            } else if (Character.isWhitespace(character) && !inSingleQuotes && !inDoubleQuotes) {
                 if (tokenStarted) {
                     arguments.add(new ParsedArgument(current.toString(), tokenQuoted));
                     current.setLength(0);
@@ -222,11 +168,9 @@ public class Main {
                 tokenStarted = true;
             }
         }
-
         if (tokenStarted) {
             arguments.add(new ParsedArgument(current.toString(), tokenQuoted));
         }
-
         return arguments;
     }
 
@@ -254,22 +198,16 @@ public class Main {
 
     private static Path findExecutable(String commandName) {
         String pathValue = System.getenv("PATH");
-
         if (pathValue == null) {
             return null;
         }
-
-        String[] directories = pathValue.split(
-                Pattern.quote(File.pathSeparator), -1);
-
+        String[] directories = pathValue.split(Pattern.quote(File.pathSeparator), -1);
         for (String directory : directories) {
             Path candidate = Path.of(directory).resolve(commandName);
-
             if (Files.isRegularFile(candidate) && Files.isExecutable(candidate)) {
                 return candidate;
             }
         }
-
         return null;
     }
 }
