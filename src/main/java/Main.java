@@ -122,7 +122,7 @@ public class Main {
         for (int i = 0; i < backgroundJobs.size(); i++) {
             BackgroundJob job = backgroundJobs.get(i);
             boolean running = job.process.isAlive();
-            if (running) {
+            if (running && !includeRunning) {
                 continue;
             }
 
