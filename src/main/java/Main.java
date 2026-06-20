@@ -39,7 +39,24 @@ public class Main {
             if (command.equals("echo")) {
                 System.out.println(String.join(" ", arguments));
             } else if (command.equals("jobs")) {
-                reapBackgroundJobs(backgroundJobs, true);
+                for (int i = 0; i < backgroundJobs.size(); i++) {
+                    BackgroundJob job = backgroundJobs.get(i);
+
+                    if (!job.process.isAlive()) {
+                        continue;
+                    }
+
+                    char marker = i == backgroundJobs.size() - 1
+                            ? '+'
+                            : i == backgroundJobs.size() - 2 ? '-' : ' ';
+
+                    System.out.printf(
+                            "[%d]%c  %-24s%s &%n",
+                            job.number,
+                            marker,
+                            "Running",
+                            job.commandLine.replaceFirst("\\s*&\\s*$", ""));
+                }
             } else if (command.equals("pwd")) {
                 System.out.println(currentDirectory);
             } else if (command.equals("cd") && !arguments.isEmpty()) {
@@ -105,19 +122,23 @@ public class Main {
         for (int i = 0; i < backgroundJobs.size(); i++) {
             BackgroundJob job = backgroundJobs.get(i);
             boolean running = job.process.isAlive();
-            if (running && !includeRunning) {
+            if (running) {
                 continue;
             }
+
             char marker = i == backgroundJobs.size() - 1
                     ? '+'
                     : i == backgroundJobs.size() - 2 ? '-' : ' ';
-            String status = running ? "Running" : "Done";
-            String displayedCommand = running ? job.commandLine : job.commandLine.replaceFirst("\\s*&\\s*$", "");
-            System.out.printf("[%d]%c  %-24s%s%n", job.number, marker, status, displayedCommand);
-            if (!running) {
-                job.process.waitFor();
-                completedJobs.add(job);
-            }
+
+            System.out.printf(
+                    "[%d]%c  %-24s%s%n",
+                    job.number,
+                    marker,
+                    "Done",
+                    job.commandLine.replaceFirst("\\s*&\\s*$", ""));
+
+            job.process.waitFor();
+            completedJobs.add(job);
         }
         backgroundJobs.removeAll(completedJobs);
     }
