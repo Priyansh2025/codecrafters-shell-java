@@ -859,14 +859,14 @@ public class Main {
         String commandStr = cmdBuilder.toString().trim();
 
         // Process background operator
-        boolean runInBackground = false;
-        if (!tokens.isEmpty()) {
-            Token last = tokens.get(tokens.size() - 1);
-            if (!last.quoted && last.text.equals("&")) {
-                runInBackground = true;
-                tokens.remove(tokens.size() - 1);
-            }
-        }
+        // boolean runInBackground = false;
+        // if (!tokens.isEmpty()) {
+        // Token last = tokens.get(tokens.size() - 1);
+        // if (!last.quoted && last.text.equals("&")) {
+        // runInBackground = true;
+        // tokens.remove(tokens.size() - 1);
+        // }
+        // }
 
         // Split tokens by pipe character '|' (unquoted)
         List<List<Token>> subCommandsTokens = new java.util.ArrayList<>();
@@ -927,12 +927,12 @@ public class Main {
                 }
             }
 
-        //    String[] args = new String[subTokens.size()];
-        //    for (int i = 0; i < subTokens.size(); i++) {
-        //        args[i] = subTokens.get(i).text;
-        //    }
-        //    pipeline.add(new SingleCommand(args, redirectFile, appendOut, redirectErrFile, appendErr));
-        //}
+            String[] args = new String[subTokens.size()];
+            for (int i = 0; i < subTokens.size(); i++) {
+                args[i] = subTokens.get(i).text;
+            }
+            pipeline.add(new SingleCommand(args, redirectFile, appendOut, redirectErrFile, appendErr));
+        }
 
         return new ParsedCommand(pipeline, runInBackground, commandStr);
     }
