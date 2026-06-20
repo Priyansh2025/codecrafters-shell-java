@@ -22,6 +22,7 @@ public class Main {
             String stdoutFile = null;
             String stderrFile = null;
             boolean stdoutAppend = false;
+            boolean stderrAppend = false;
 
             List<String> commandWords = new ArrayList<>();
 
@@ -36,6 +37,10 @@ public class Main {
                     stdoutAppend = true;
                 } else if (token.equals("2>") && i + 1 < words.size()) {
                     stderrFile = words.get(++i);
+                    stderrAppend = false;
+                } else if (token.equals("2>>") && i + 1 < words.size()) {
+                    stderrFile = words.get(++i);
+                    stderrAppend = true;
                 } else {
                     commandWords.add(token);
                 }
@@ -53,7 +58,7 @@ public class Main {
             }
 
             if (stderrFile != null) {
-                err = new PrintStream(new FileOutputStream(stderrFile, false));
+                err = new PrintStream(new FileOutputStream(stderrFile, stderrAppend));
             }
 
             String command = commandWords.get(0);
