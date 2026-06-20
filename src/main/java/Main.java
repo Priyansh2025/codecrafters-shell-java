@@ -119,11 +119,20 @@ public class Main {
     private static void reapBackgroundJobs(List<BackgroundJob> jobs) {
         List<BackgroundJob> toRemove = new ArrayList<>();
 
-        for (BackgroundJob job : jobs) {
+        for (int i = 0; i < jobs.size(); i++) {
+            BackgroundJob job = jobs.get(i);
+
             if (!job.process.isAlive()) {
-                System.out.printf("[%d]  Done                    %s%n",
+
+                // compute marker like jobs builtin
+                char marker = (i == jobs.size() - 1) ? '+' : (i == jobs.size() - 2) ? '-' : ' ';
+
+                System.out.printf("[%d]%c  %-24s%s%n",
                         job.number,
+                        marker,
+                        "Done",
                         job.commandLine.replaceFirst("\\s*&\\s*$", ""));
+
                 toRemove.add(job);
             }
         }
