@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +24,24 @@ public class Main {
                 continue;
             }
 
+            String outputFile = null;
+
+            for (int i = 0; i < words.size(); i++) {
+                if (words.get(i).equals(">") || words.get(i).equals("1>")) {
+                    if (i + 1 < words.size()) {
+                        outputFile = words.get(i + 1);
+                        words = new ArrayList<>(words.subList(0, i));
+                    }
+                    break;
+                }
+            }
+
+            PrintStream out = System.out;
+
+            if (outputFile != null) {
+                out = new PrintStream(new FileOutputStream(outputFile, false));
+            }
+
             String command = words.get(0);
             String result = words.size() > 1
                     ? String.join(" ", words.subList(1, words.size()))
@@ -31,13 +51,13 @@ public class Main {
                 exit = true;
 
             } else if (Objects.equals(command, "echo")) {
-                System.out.println(result);
+                out.println(result);
 
             } else if (Objects.equals(command, "type")) {
-                System.out.println(type(result));
+                out.println(type(result));
 
             } else if (Objects.equals(command, "pwd")) {
-                System.out.println(currentDirectory.getCanonicalPath());
+                out.println(currentDirectory.getCanonicalPath());
 
             } else if (Objects.equals(command, "cd")) {
 
@@ -63,11 +83,21 @@ public class Main {
                 pb.directory(currentDirectory);
 
                 Process process = pb.start();
-                process.getInputStream().transferTo(System.out);
+
+                if (outputFile != null) {
+                    process.getInputStream().transferTo(out);
+                } else {
+                    process.getInputStream().transferTo(System.out);
+                }
+
                 process.getErrorStream().transferTo(System.err);
 
             } else {
                 System.out.println(command + ": command not found");
+            }
+
+            if (outputFile != null) {
+                out.close();
             }
         }
 
