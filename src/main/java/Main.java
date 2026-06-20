@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
+    private static int nextJobNumber = 1;
 
     private static File currentDirectory = new File(System.getProperty("user.dir"));
 
@@ -14,6 +15,17 @@ public class Main {
             String input = sc.nextLine();
 
             List<String> words = parseInput(input);
+
+            if (words.isEmpty()) {
+                continue;
+            }
+
+            boolean backgroundJob = false;
+
+            if (!words.isEmpty() && words.get(words.size() - 1).equals("&")) {
+                backgroundJob = true;
+                words.remove(words.size() - 1);
+            }
 
             if (words.isEmpty()) {
                 continue;
@@ -98,19 +110,29 @@ public class Main {
 
             } else if (Objects.equals(command, "jobs")) {
                 // Empty implementation for this stage
-            } else if (getExecutable(command) != null) {
+            } } else if (getExecutable(command) != null) {
 
-                ProcessBuilder pb = new ProcessBuilder(commandWords);
-                pb.directory(currentDirectory);
+    ProcessBuilder pb = new ProcessBuilder(commandWords);
+    pb.directory(currentDirectory);
 
-                Process process = pb.start();
+    Process process = pb.start();
 
-                process.getInputStream().transferTo(out);
-                process.getErrorStream().transferTo(err);
+    if (backgroundJob) {
 
-                process.waitFor();
+        long pid = process.pid();
 
-            } else {
+        System.out.println("[" + nextJobNumber + "] " + pid);
+        nextJobNumber++;
+
+    } else {
+
+        process.getInputStream().transferTo(out);
+        process.getErrorStream().transferTo(err);
+
+        process.waitFor();
+    }
+
+} else { else {
                 err.println(command + ": command not found");
             }
 
