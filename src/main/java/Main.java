@@ -843,30 +843,30 @@ public class Main {
 
         // Build command string before redirection/background operator is processed
         StringBuilder cmdBuilder = new StringBuilder();
-        for (Token t : tokens) {
-            if (!t.quoted && t.text.equals("&")) {
-                continue;
-            }
-            if (cmdBuilder.length() > 0) {
-                cmdBuilder.append(" ");
-            }
-            if (t.quoted) {
-                cmdBuilder.append("'").append(t.text).append("'");
-            } else {
-                cmdBuilder.append(t.text);
-            }
-        }
+        //for (Token t : tokens) {
+        //    if (!t.quoted && t.text.equals("&")) {
+        //        continue;
+        //    }
+        //    if (cmdBuilder.length() > 0) {
+        //        cmdBuilder.append(" ");
+        //    }
+        //    if (t.quoted) {
+        //        cmdBuilder.append("'").append(t.text).append("'");
+        //    } else {
+        //        cmdBuilder.append(t.text);
+        //    }
+        //}
         String commandStr = cmdBuilder.toString().trim();
 
         // Process background operator
-        // boolean runInBackground = false;
-        // if (!tokens.isEmpty()) {
-        // Token last = tokens.get(tokens.size() - 1);
-        // if (!last.quoted && last.text.equals("&")) {
-        // runInBackground = true;
-        // tokens.remove(tokens.size() - 1);
-        // }
-        // }
+        boolean runInBackground = false;
+        if (!tokens.isEmpty()) {
+            Token last = tokens.get(tokens.size() - 1);
+            if (!last.quoted && last.text.equals("&")) {
+                runInBackground = true;
+                tokens.remove(tokens.size() - 1);
+            }
+        }
 
         // Split tokens by pipe character '|' (unquoted)
         List<List<Token>> subCommandsTokens = new java.util.ArrayList<>();
