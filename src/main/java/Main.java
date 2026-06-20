@@ -4,6 +4,20 @@ import java.util.*;
 public class Main {
 
     private static int nextJobNumber = 1;
+    private static final List<Job> jobs = new ArrayList<>();
+
+    static class Job {
+        int jobNumber;
+        Process process;
+        String command;
+
+        Job(int jobNumber, Process process, String command) {
+            this.jobNumber = jobNumber;
+            this.process = process;
+            this.command = command;
+        }
+    }
+
     private static File currentDirectory = new File(System.getProperty("user.dir"));
 
     public static void main(String[] args) throws Exception {
@@ -109,7 +123,23 @@ public class Main {
                 }
 
             } else if (Objects.equals(command, "jobs")) {
-                // Empty implementation for current stage
+
+                Iterator<Job> iterator = jobs.iterator();
+
+                while (iterator.hasNext()) {
+                    Job job = iterator.next();
+
+                    if (!job.process.isAlive()) {
+                        iterator.remove();
+                        continue;
+                    }
+
+                    System.out.printf(
+                            "[%d]+  %-24s%s%n",
+                            job.jobNumber,
+                            "Running",
+                            job.command);
+                }
 
             } else if (getExecutable(command) != null) {
 
@@ -125,6 +155,11 @@ public class Main {
                 if (backgroundJob) {
 
                     long pid = process.pid();
+
+                    jobs.add(new Job(
+                            nextJobNumber,
+                            process,
+                            String.join(" ", commandWords) + " &"));
 
                     System.out.println("[" + nextJobNumber + "] " + pid);
                     nextJobNumber++;
