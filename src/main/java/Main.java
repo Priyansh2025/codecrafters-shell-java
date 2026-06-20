@@ -137,16 +137,8 @@ public class Main {
                         marker = "-";
                     }
 
-                    if (job.process.isAlive()) {
-
-                        System.out.printf(
-                                "[%d]%s  %-24s%s%n",
-                                job.jobNumber,
-                                marker,
-                                "Running",
-                                job.command);
-
-                    } else {
+                    try {
+                        job.process.exitValue();
 
                         String cmd = job.command;
                         if (cmd.endsWith(" &")) {
@@ -161,41 +153,19 @@ public class Main {
                                 cmd);
 
                         completedJobs.add(job);
+
+                    } catch (IllegalThreadStateException e) {
+
+                        System.out.printf(
+                                "[%d]%s  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Running",
+                                job.command);
                     }
                 }
 
                 jobs.removeAll(completedJobs);
-
-            } else if (getExecutable(command) != null) {
-
-                ProcessBuilder pb = new ProcessBuilder(commandWords);
-                pb.directory(currentDirectory);
-
-                if (backgroundJob) {
-                    pb.inheritIO();
-                }
-
-                Process process = pb.start();
-
-                if (backgroundJob) {
-
-                    long pid = process.pid();
-
-                    jobs.add(new Job(
-                            nextJobNumber,
-                            process,
-                            String.join(" ", commandWords) + " &"));
-
-                    System.out.println("[" + nextJobNumber + "] " + pid);
-                    nextJobNumber++;
-
-                } else {
-
-                    process.getInputStream().transferTo(out);
-                    process.getErrorStream().transferTo(err);
-
-                    process.waitFor();
-                }
 
             } else {
                 err.println(command + ": command not found");
