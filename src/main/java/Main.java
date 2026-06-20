@@ -96,6 +96,8 @@ public class Main {
                     err.println("cd: " + result + ": No such file or directory");
                 }
 
+            } else if (Objects.equals(command, "jobs")) {
+                // Empty implementation for this stage
             } else if (getExecutable(command) != null) {
 
                 ProcessBuilder pb = new ProcessBuilder(commandWords);
@@ -118,8 +120,6 @@ public class Main {
 
             if (err != System.err) {
                 err.close();
-            } else if (Objects.equals(command, "jobs")) {
-                // Empty implementation for this stage
             }
         }
 
