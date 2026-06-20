@@ -1,10 +1,5 @@
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 public class Main {
 
@@ -24,27 +19,41 @@ public class Main {
                 continue;
             }
 
-            String outputFile = null;
+            String stdoutFile = null;
+            String stderrFile = null;
+
+            List<String> commandWords = new ArrayList<>();
 
             for (int i = 0; i < words.size(); i++) {
-                if (words.get(i).equals(">") || words.get(i).equals("1>")) {
-                    if (i + 1 < words.size()) {
-                        outputFile = words.get(i + 1);
-                        words = new ArrayList<>(words.subList(0, i));
-                    }
-                    break;
+                String token = words.get(i);
+
+                if ((token.equals(">") || token.equals("1>")) && i + 1 < words.size()) {
+                    stdoutFile = words.get(++i);
+                } else if (token.equals("2>") && i + 1 < words.size()) {
+                    stderrFile = words.get(++i);
+                } else {
+                    commandWords.add(token);
                 }
             }
 
-            PrintStream out = System.out;
-
-            if (outputFile != null) {
-                out = new PrintStream(new FileOutputStream(outputFile, false));
+            if (commandWords.isEmpty()) {
+                continue;
             }
 
-            String command = words.get(0);
-            String result = words.size() > 1
-                    ? String.join(" ", words.subList(1, words.size()))
+            PrintStream out = System.out;
+            PrintStream err = System.err;
+
+            if (stdoutFile != null) {
+                out = new PrintStream(new FileOutputStream(stdoutFile, false));
+            }
+
+            if (stderrFile != null) {
+                err = new PrintStream(new FileOutputStream(stderrFile, false));
+            }
+
+            String command = commandWords.get(0);
+            String result = commandWords.size() > 1
+                    ? String.join(" ", commandWords.subList(1, commandWords.size()))
                     : "";
 
             if (Objects.equals(command, "exit")) {
@@ -74,30 +83,31 @@ public class Main {
                 if (target.exists() && target.isDirectory()) {
                     currentDirectory = target.getCanonicalFile();
                 } else {
-                    System.out.println("cd: " + result + ": No such file or directory");
+                    err.println("cd: " + result + ": No such file or directory");
                 }
 
             } else if (getExecutable(command) != null) {
 
-                ProcessBuilder pb = new ProcessBuilder(words);
+                ProcessBuilder pb = new ProcessBuilder(commandWords);
                 pb.directory(currentDirectory);
 
                 Process process = pb.start();
 
-                if (outputFile != null) {
-                    process.getInputStream().transferTo(out);
-                } else {
-                    process.getInputStream().transferTo(System.out);
-                }
+                process.getInputStream().transferTo(out);
+                process.getErrorStream().transferTo(err);
 
-                process.getErrorStream().transferTo(System.err);
+                process.waitFor();
 
             } else {
-                System.out.println(command + ": command not found");
+                err.println(command + ": command not found");
             }
 
-            if (outputFile != null) {
+            if (out != System.out) {
                 out.close();
+            }
+
+            if (err != System.err) {
+                err.close();
             }
         }
 
@@ -187,15 +197,16 @@ public class Main {
         String[] commands = { "exit", "echo", "type", "pwd", "cd" };
 
         for (String text : commands) {
-            if (Objects.equals(text, command))
+            if (Objects.equals(text, command)) {
                 return command + " is a shell builtin";
+            }
         }
 
-        String pathCommands = System.getenv("PATH");
-        String[] pathCommand = pathCommands.split(":");
+        String[] paths = System.getenv("PATH").split(":");
 
-        for (String path : pathCommand) {
+        for (String path : paths) {
             File file = new File(path, command);
+
             if (file.exists() && file.canExecute()) {
                 return command + " is " + file.getAbsolutePath();
             }
@@ -205,11 +216,11 @@ public class Main {
     }
 
     public static String getExecutable(String command) {
-        String pathCommands = System.getenv("PATH");
-        String[] pathCommand = pathCommands.split(":");
+        String[] paths = System.getenv("PATH").split(":");
 
-        for (String path : pathCommand) {
+        for (String path : paths) {
             File file = new File(path, command);
+
             if (file.exists() && file.canExecute()) {
                 return file.getAbsolutePath();
             }
