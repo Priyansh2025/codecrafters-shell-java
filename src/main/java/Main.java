@@ -10,7 +10,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Path currentDirectory = Path.of("").toAbsolutePath().normalize();
-        int nextJobNumber = 1;
         List<BackgroundJob> backgroundJobs = new ArrayList<>();
 
         while (true) {
@@ -106,7 +105,10 @@ public class Main {
                             .start();
 
                     if (runInBackground) {
-                        int jobNumber = nextJobNumber++;
+                        int jobNumber = backgroundJobs.stream()
+                                .mapToInt(job -> job.number)
+                                .max()
+                                .orElse(0) + 1;
                         backgroundJobs.add(new BackgroundJob(
                                 jobNumber, process, commandLine.trim()));
                         System.out.println("[" + jobNumber + "] " + process.pid());
@@ -125,14 +127,7 @@ public class Main {
 
         for (int i = 0; i < backgroundJobs.size(); i++) {
             BackgroundJob job = backgroundJobs.get(i);
-            boolean running;
-
-            try {
-                job.process.exitValue();
-                running = false;
-            } catch (IllegalThreadStateException e) {
-                running = true;
-            }
+            boolean running = job.process.isAlive();
 
             if (running && !includeRunning) {
                 continue;
@@ -149,6 +144,7 @@ public class Main {
                     job.number, marker, status, displayedCommand);
 
             if (!running) {
+                job.process.waitFor();
                 completedJobs.add(job);
             }
         }
