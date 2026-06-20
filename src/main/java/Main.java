@@ -124,47 +124,49 @@ public class Main {
 
             } else if (Objects.equals(command, "jobs")) {
 
-    List<Job> completedJobs = new ArrayList<>();
+                List<Job> completedJobs = new ArrayList<>();
 
-    for (int i = 0; i < jobs.size(); i++) {
-        Job job = jobs.get(i);
+                for (int i = 0; i < jobs.size(); i++) {
+                    Job job = jobs.get(i);
 
-        String marker = " ";
+                    String marker = " ";
 
-        if (i == jobs.size() - 1) {
-            marker = "+";
-        } else if (i == jobs.size() - 2) {
-            marker = "-";
-        }
+                    if (i == jobs.size() - 1) {
+                        marker = "+";
+                    } else if (i == jobs.size() - 2) {
+                        marker = "-";
+                    }
 
-        if (job.process.isAlive()) {
+                    if (job.process.isAlive()) {
 
-            System.out.printf(
-                    "[%d]%s  %-24s%s%n",
-                    job.jobNumber,
-                    marker,
-                    "Running",
-                    job.command);
+                        System.out.printf(
+                                "[%d]%s  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Running",
+                                job.command);
 
-        } else {
+                    } else {
 
-            String cmd = job.command;
-            if (cmd.endsWith(" &")) {
-                cmd = cmd.substring(0, cmd.length() - 2);
-            }
+                        String cmd = job.command;
+                        if (cmd.endsWith(" &")) {
+                            cmd = cmd.substring(0, cmd.length() - 2);
+                        }
 
-            System.out.printf(
-                    "[%d]%s  %-24s%s%n",
-                    job.jobNumber,
-                    marker,
-                    "Done",
-                    cmd);
+                        System.out.printf(
+                                "[%d]%s  %-24s%s%n",
+                                job.jobNumber,
+                                marker,
+                                "Done",
+                                cmd);
 
-            completedJobs.add(job);
-        }
-    }
+                        completedJobs.add(job);
+                    }
+                }
 
-    jobs.removeAll(completedJobs); else if (getExecutable(command) != null) {
+                jobs.removeAll(completedJobs);
+
+            } else if (getExecutable(command) != null) {
 
                 ProcessBuilder pb = new ProcessBuilder(commandWords);
                 pb.directory(currentDirectory);
