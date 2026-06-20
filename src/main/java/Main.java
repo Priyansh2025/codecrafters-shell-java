@@ -40,16 +40,18 @@ public class Main {
                 System.out.println(String.join(" ", arguments));
             } else if (command.equals("jobs")) {
                 reapBackgroundJobs(backgroundJobs);
-                for (int i = 0; i < backgroundJobs.size(); i++) {
-                    BackgroundJob job = backgroundJobs.get(i);
 
-                    if (!job.process.isAlive()) {
-                        continue;
+                List<BackgroundJob> running = new ArrayList<>();
+                for (BackgroundJob job : backgroundJobs) {
+                    if (job.process.isAlive()) {
+                        running.add(job);
                     }
+                }
 
-                    char marker = i == backgroundJobs.size() - 1
-                            ? '+'
-                            : i == backgroundJobs.size() - 2 ? '-' : ' ';
+                for (int i = 0; i < running.size(); i++) {
+                    BackgroundJob job = running.get(i);
+
+                    char marker = (i == running.size() - 1) ? '+' : (i == running.size() - 2) ? '-' : ' ';
 
                     System.out.printf(
                             "[%d]%c  %-24s%s &%n",
@@ -119,20 +121,11 @@ public class Main {
     private static void reapBackgroundJobs(List<BackgroundJob> jobs) {
         List<BackgroundJob> toRemove = new ArrayList<>();
 
-        for (int i = 0; i < jobs.size(); i++) {
-            BackgroundJob job = jobs.get(i);
-
+        for (BackgroundJob job : jobs) {
             if (!job.process.isAlive()) {
-
-                // compute marker like jobs builtin
-                char marker = (i == jobs.size() - 1) ? '+' : (i == jobs.size() - 2) ? '-' : ' ';
-
-                System.out.printf("[%d]%c  %-24s%s%n",
+                System.out.printf("[%d]+  Done                    %s%n",
                         job.number,
-                        marker,
-                        "Done",
                         job.commandLine.replaceFirst("\\s*&\\s*$", ""));
-
                 toRemove.add(job);
             }
         }
