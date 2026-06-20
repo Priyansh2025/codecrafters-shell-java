@@ -118,6 +118,8 @@ public class Main {
 
             if (err != System.err) {
                 err.close();
+            } else if (Objects.equals(command, "jobs")) {
+                // Empty implementation for this stage
             }
         }
 
@@ -204,7 +206,7 @@ public class Main {
     }
 
     public static String type(String command) {
-        String[] commands = { "exit", "echo", "type", "pwd", "cd" };
+        String[] commands = { "exit", "echo", "type", "pwd", "cd", "jobs" };
 
         for (String text : commands) {
             if (Objects.equals(text, command)) {
