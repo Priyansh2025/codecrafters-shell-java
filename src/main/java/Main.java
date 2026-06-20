@@ -13,7 +13,7 @@ public class Main {
         int nextJobNumber = 1;
         List<BackgroundJob> backgroundJobs = new ArrayList<>();
         while (true) {
-            reapBackgroundJobs(backgroundJobs, false);
+            reapBackgroundJobs(backgroundJobs);
             System.out.print("$ ");
             System.out.flush();
             if (!scanner.hasNextLine()) {
@@ -39,6 +39,7 @@ public class Main {
             if (command.equals("echo")) {
                 System.out.println(String.join(" ", arguments));
             } else if (command.equals("jobs")) {
+                reapBackgroundJobs(backgroundJobs);
                 for (int i = 0; i < backgroundJobs.size(); i++) {
                     BackgroundJob job = backgroundJobs.get(i);
 
@@ -115,32 +116,19 @@ public class Main {
         }
     }
 
-    private static void reapBackgroundJobs(
-            List<BackgroundJob> backgroundJobs, boolean includeRunning)
-            throws InterruptedException {
-        List<BackgroundJob> completedJobs = new ArrayList<>();
-        for (int i = 0; i < backgroundJobs.size(); i++) {
-            BackgroundJob job = backgroundJobs.get(i);
-            boolean running = job.process.isAlive();
-            if (running && !includeRunning) {
-                continue;
+    private static void reapBackgroundJobs(List<BackgroundJob> jobs) {
+        List<BackgroundJob> toRemove = new ArrayList<>();
+
+        for (BackgroundJob job : jobs) {
+            if (!job.process.isAlive()) {
+                System.out.printf("[%d]  Done                    %s%n",
+                        job.number,
+                        job.commandLine.replaceFirst("\\s*&\\s*$", ""));
+                toRemove.add(job);
             }
-
-            char marker = i == backgroundJobs.size() - 1
-                    ? '+'
-                    : i == backgroundJobs.size() - 2 ? '-' : ' ';
-
-            System.out.printf(
-                    "[%d]%c  %-24s%s%n",
-                    job.number,
-                    marker,
-                    "Done",
-                    job.commandLine.replaceFirst("\\s*&\\s*$", ""));
-
-            job.process.waitFor();
-            completedJobs.add(job);
         }
-        backgroundJobs.removeAll(completedJobs);
+
+        jobs.removeAll(toRemove);
     }
 
     private static List<ParsedArgument> parseArguments(String input) {
