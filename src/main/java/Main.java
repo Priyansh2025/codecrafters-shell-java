@@ -10,6 +10,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         Scanner scanner = new Scanner(System.in);
         Path currentDirectory = Path.of("").toAbsolutePath().normalize();
+        int nextJobNumber = 1;
         List<BackgroundJob> backgroundJobs = new ArrayList<>();
 
         while (true) {
@@ -105,10 +106,7 @@ public class Main {
                             .start();
 
                     if (runInBackground) {
-                        int jobNumber = backgroundJobs.stream()
-                                .mapToInt(job -> job.number)
-                                .max()
-                                .orElse(0) + 1;
+                        int jobNumber = nextJobNumber++;
                         backgroundJobs.add(new BackgroundJob(
                                 jobNumber, process, commandLine.trim()));
                         System.out.println("[" + jobNumber + "] " + process.pid());
