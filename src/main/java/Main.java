@@ -2,8 +2,8 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    private static int nextJobNumber = 1;
 
+    private static int nextJobNumber = 1;
     private static File currentDirectory = new File(System.getProperty("user.dir"));
 
     public static void main(String[] args) throws Exception {
@@ -110,29 +110,30 @@ public class Main {
 
             } else if (Objects.equals(command, "jobs")) {
                 // Empty implementation for this stage
-            } } else if (getExecutable(command) != null) {
 
-    ProcessBuilder pb = new ProcessBuilder(commandWords);
-    pb.directory(currentDirectory);
+            } else if (getExecutable(command) != null) {
 
-    Process process = pb.start();
+                ProcessBuilder pb = new ProcessBuilder(commandWords);
+                pb.directory(currentDirectory);
 
-    if (backgroundJob) {
+                Process process = pb.start();
 
-        long pid = process.pid();
+                if (backgroundJob) {
 
-        System.out.println("[" + nextJobNumber + "] " + pid);
-        nextJobNumber++;
+                    long pid = process.pid();
 
-    } else {
+                    System.out.println("[" + nextJobNumber + "] " + pid);
+                    nextJobNumber++;
 
-        process.getInputStream().transferTo(out);
-        process.getErrorStream().transferTo(err);
+                } else {
 
-        process.waitFor();
-    }
+                    process.getInputStream().transferTo(out);
+                    process.getErrorStream().transferTo(err);
 
-} else { else {
+                    process.waitFor();
+                }
+
+            } else {
                 err.println(command + ": command not found");
             }
 
