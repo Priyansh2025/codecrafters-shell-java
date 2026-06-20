@@ -124,35 +124,47 @@ public class Main {
 
             } else if (Objects.equals(command, "jobs")) {
 
-                Iterator<Job> iterator = jobs.iterator();
+    List<Job> completedJobs = new ArrayList<>();
 
-                while (iterator.hasNext()) {
-                    Job job = iterator.next();
+    for (int i = 0; i < jobs.size(); i++) {
+        Job job = jobs.get(i);
 
-                    if (!job.process.isAlive()) {
-                        iterator.remove();
-                    }
-                }
+        String marker = " ";
 
-                for (int i = 0; i < jobs.size(); i++) {
-                    Job job = jobs.get(i);
+        if (i == jobs.size() - 1) {
+            marker = "+";
+        } else if (i == jobs.size() - 2) {
+            marker = "-";
+        }
 
-                    String marker = " ";
+        if (job.process.isAlive()) {
 
-                    if (i == jobs.size() - 1) {
-                        marker = "+";
-                    } else if (i == jobs.size() - 2) {
-                        marker = "-";
-                    }
+            System.out.printf(
+                    "[%d]%s  %-24s%s%n",
+                    job.jobNumber,
+                    marker,
+                    "Running",
+                    job.command);
 
-                    System.out.printf(
-                            "[%d]%s  %-24s%s%n",
-                            job.jobNumber,
-                            marker,
-                            "Running",
-                            job.command);
-                }
-            } else if (getExecutable(command) != null) {
+        } else {
+
+            String cmd = job.command;
+            if (cmd.endsWith(" &")) {
+                cmd = cmd.substring(0, cmd.length() - 2);
+            }
+
+            System.out.printf(
+                    "[%d]%s  %-24s%s%n",
+                    job.jobNumber,
+                    marker,
+                    "Done",
+                    cmd);
+
+            completedJobs.add(job);
+        }
+    }
+
+    jobs.removeAll(completedJobs); else if (getExecutable(command) != null) {
 
                 ProcessBuilder pb = new ProcessBuilder(commandWords);
                 pb.directory(currentDirectory);
