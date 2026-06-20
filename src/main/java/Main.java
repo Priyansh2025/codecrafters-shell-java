@@ -109,12 +109,16 @@ public class Main {
                 }
 
             } else if (Objects.equals(command, "jobs")) {
-                // Empty implementation for this stage
+                // Empty implementation for current stage
 
             } else if (getExecutable(command) != null) {
 
                 ProcessBuilder pb = new ProcessBuilder(commandWords);
                 pb.directory(currentDirectory);
+
+                if (backgroundJob) {
+                    pb.inheritIO();
+                }
 
                 Process process = pb.start();
 
