@@ -125,7 +125,14 @@ public class Main {
 
         for (int i = 0; i < backgroundJobs.size(); i++) {
             BackgroundJob job = backgroundJobs.get(i);
-            boolean running = job.process.isAlive();
+            boolean running;
+
+            try {
+                job.process.exitValue();
+                running = false;
+            } catch (IllegalThreadStateException e) {
+                running = true;
+            }
 
             if (running && !includeRunning) {
                 continue;
@@ -142,7 +149,6 @@ public class Main {
                     job.number, marker, status, displayedCommand);
 
             if (!running) {
-                job.process.waitFor();
                 completedJobs.add(job);
             }
         }
