@@ -122,8 +122,13 @@ public class Main {
                     break;
                 case "jobs":
                     for (Job job : bgJobs) {
-                        if (job.status.equals("Running") && !job.process.isAlive()) {
-                            job.status = "Done";
+                        if (job.status.equals("Running")) {
+                            try {
+                                job.process.exitValue();
+                                job.status = "Done";
+                            } catch (IllegalThreadStateException e) {
+                                // still running
+                            }
                         }
                     }
                     int totalJobs = bgJobs.size();
